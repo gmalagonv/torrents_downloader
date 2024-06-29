@@ -4,13 +4,13 @@ import pandas as pd
 import re
 
 
+############################################################################
+
 def extract_page_number(url):
     pattern = r'/search/(\d+)/\?search='
     match = re.search(pattern, url)
     if match:
         return int(match.group(1))
-    #return None
-
 
 
 
@@ -65,50 +65,5 @@ def main(title = 'the godfather', category = 'movies'):
 
 
 
-
-#    for link in links:
-#     # print(type(link['href']))
-#     following_pages.add(extract_page_number(link['href']))
-#     #   following_pages.add(link['href'])
-#    print (following_pages)
-
-   
-    #    links = i.find_all('a', href=True)
-    #    print(links)
-    #    for link in links:
-    #        print(link)
-        #following_pages.add(url_head + link['href'])
-
-       
-   #print(following_pages)
-    #    for link in links:
-    #     print(f"Found link: {link['href']}")
-   #pages_links = footer_div.find('href')
-   #print(footer_div.prettify())
-
-   
-#    books = []
-
-
-
-# for i in range(1,5):
-#   url = f"https://books.toscrape.com/catalogue/page-{i}.html"
-#   response = requests.get(url)
-#   response = response.content
-#   soup = BeautifulSoup(response, 'html.parser')
-#   ol = soup.find('ol')
-#   articles = ol.find_all('article', class_='product_pod')
-#   for article in articles:
-#     image = article.find('img')
-#     title = image.attrs['alt']
-#     starTag = article.find('p')
-#     star = starTag['class'][1]
-#     price = article.find('p', class_='price_color').text
-#     price = float(price[1:])
-#     books.append([title, star, price])
-    
-
-# df = pd.DataFrame(books, columns=['Title', 'Star Rating', 'Price'])
-# df.to_csv('books.csv')
 if __name__ == '__main__':
     main()
