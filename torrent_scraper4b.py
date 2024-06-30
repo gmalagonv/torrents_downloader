@@ -54,14 +54,22 @@ def fromRows2df(table_rows, df_data):
         a_tag = (col[1].find('a'))
         title = a_tag.text.strip()
         link = url_torrent + a_tag.get('href')
+
+        if '1080p' in title:
+            res = 1080
+        elif '720p' in title:
+            res = 720
+        else:
+            res = None
+
         size = float((col[4].text).split()[0])
         seeders = int(col[5].text)
         leechers = int(col[5].text)
 
          # do not add if seeders = 0
-        if seeders != 0:
-            df_data = pd.concat([df_data, pd.DataFrame({"title": [title], "link": [link], 
-                                                                "size": [size], "seeders": [seeders],
+        if seeders != 0 and size <= 10:
+            df_data = pd.concat([df_data, pd.DataFrame({"title": [title], "link": [link], "resolution": [res],
+                                                                "size(GB)": [size], "seeders": [seeders],
                                                                 "leechers" : [leechers]})], ignore_index=True)
     return df_data
 
@@ -73,24 +81,24 @@ def rate_torrent(df_data):
     b = 1
     c = 0.1
     
-    # df_data['seeders'] = df_data['seeders'] * a
-    # df_data['leechers'] = df_data['leechers'] * b
-    # df_data['size'] = df_data['size'] * c
 
-    df_data['score'] = df_data['seeders'] * a + df_data['leechers'] * b + df_data['size'] *c
+    df_data['score'] = df_data['seeders'] * a + df_data['leechers'] * b + df_data['size(GB)'] *c
     df_data = df_data.sort_values(by='score',ascending=False)
     df_data = df_data.reset_index(drop=True)
-
+    
+    # keep a max of 15 results
+    df_data = df_data.head(15)
+    
     return df_data
 
 
 
-def main(title='godfather', category='movies'):
-    r = 0
+def get_df_torrents(title='godfather', category='movies', save2csv = False):
+
     url_head = 'https://rargb.to/search'
     url_tail = f'/?search={title}&category[]={category}'
     
-    df_data = pd.DataFrame(columns=["title", "link", "size", "seeders", "leechers"])
+    df_data = pd.DataFrame(columns=["title", "link", "resolution", "size(GB)", "seeders", "leechers"])
 
 
     url = url_head + url_tail
@@ -98,6 +106,7 @@ def main(title='godfather', category='movies'):
     soup = BeautifulSoup(response.text, 'html.parser')
 
     pager_links = soup.find(id='pager_links')
+
     if pager_links is None:
         last_link_num = 1
     else:
@@ -114,7 +123,11 @@ def main(title='godfather', category='movies'):
         df_data = fromRows2df(table_rows, df_data)
 
     df_data = rate_torrent(df_data)
+    
+    if save2csv:
+        df_data.to_csv(title + '_torrent_list.csv')
+
     print(df_data)
 
 if __name__ == '__main__':
-    main()
+    get_df_torrents('godfather', 'movies', True)
