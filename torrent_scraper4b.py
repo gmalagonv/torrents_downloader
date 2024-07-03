@@ -2,10 +2,14 @@ import requests
 from bs4 import BeautifulSoup
 import pandas as pd
 import re
+
 from selenium import webdriver
 from selenium.webdriver.common.by import By
 from selenium.webdriver.chrome.service import Service as ChromeService
 from selenium.webdriver.chrome.options import Options as ChromeOptions
+
+import argparse
+
 
 def extract_page_number(url):
     pattern = r'/search/(\d+)/\?search='
@@ -93,7 +97,7 @@ def rate_torrent(df_data):
 
 
 
-def get_df_torrents(title='godfather', category='movies', save2csv = False):
+def df_torrents(title='godfather', category='movies', save2csv = False):
 
     url_head = 'https://rargb.to/search'
     url_tail = f'/?search={title}&category[]={category}'
@@ -127,7 +131,45 @@ def get_df_torrents(title='godfather', category='movies', save2csv = False):
     if save2csv:
         df_data.to_csv(title + '_torrent_list.csv')
 
-    print(df_data)
+    print(df_data[["title","resolution", "size(GB)", "seeders", "leechers", "score"]])
+    
+    return df_data
+
+
+
+
+def selector_and_downloader(df_data, autoSelector=False):
+
+    if autoSelector == False:
+        # Prompt the user to enter a list of values
+        user_input = input("*********************** \nWhich one(s) do you want to download?\nEnter a list of integers separated by commas:")
+                # Convert the input string into a list of strings
+        user_list = user_input.split(',')
+
+        # Convert the list of strings to a list of integers
+        user_list = [int(item.strip()) for item in user_list]
+
+        # Print the resulting list
+        print("\nThe list of selected movies:\n", df_data.loc[user_list, ["title","resolution", "size(GB)", "seeders", "leechers", "score"]])
+        confirmation_input = input("\n do you confirm yout choice? (y/n): ")
+
+        if confirmation_input == "y":
+            df_data = df_data.loc[user_list, 'link']
+    else:
+        df_data = df_data.loc[0, 'link']
+
+
+
+
 
 if __name__ == '__main__':
-    get_df_torrents('godfather', 'movies', True)
+
+    parser = argparse.ArgumentParser()
+    parser.add_argument("-t", "--title", type=str)
+    parser.add_argument("-s", "--save", type=bool)
+    args = parser.parse_args()
+    
+
+    df_data = df_torrents(args.title, 'movies', args.save)
+    selector_and_downloader(df_data, autoSelector=False)
+
