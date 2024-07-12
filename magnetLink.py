@@ -6,8 +6,6 @@ def get_magnet_link(url):
 
     print(type(url), url)
 
-        
-
 
     # Make a request to the website
     response = requests.get(url)

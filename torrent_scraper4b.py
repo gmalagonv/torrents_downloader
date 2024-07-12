@@ -37,16 +37,11 @@ def selenium_scraper(url):
     # Get the page source and parse with BeautifulSoup
     soup = BeautifulSoup(driver.page_source, 'html.parser')
 
-    # Extract the table rows
-    table_rows = soup.find_all('tr', class_='lista2')
-
-    # Print the number of rows found
-    print(f'Number of table rows with class "lista2": {len(table_rows)}')
-
     # Close the WebDriver
+
     driver.quit()
     
-    return table_rows
+    return soup
 
 
 def fromRows2df(table_rows, df_data):
@@ -123,7 +118,15 @@ def df_torrents(title='godfather', category='movies', save2csv = False):
         url_page = url_head + '/' + str(page) + url_tail
         print('page**************', page, '\n', url_page, '\n')
 
-        table_rows = selenium_scraper(url_page)
+        soup2 = selenium_scraper(url_page)
+        
+        # Extract the table rows
+        table_rows = soup2.find_all('tr', class_='lista2')
+
+        # Print the number of rows found
+        print(f'Number of table rows with class "lista2": {len(table_rows)}')
+            
+        
         df_data = fromRows2df(table_rows, df_data)
 
     df_data = rate_torrent(df_data)
@@ -131,32 +134,56 @@ def df_torrents(title='godfather', category='movies', save2csv = False):
     if save2csv:
         df_data.to_csv(title + '_torrent_list.csv')
 
-    print(df_data[["title","resolution", "size(GB)", "seeders", "leechers", "score"]])
     
     return df_data
 
 
 
 
-def selector_and_downloader(df_data, autoSelector=False):
-
+def selector(df_data, autoSelector=False):
+    
+    confirmation_input = "n"
+    
     if autoSelector == False:
-        # Prompt the user to enter a list of values
-        user_input = input("*********************** \nWhich one(s) do you want to download?\nEnter a list of integers separated by commas:")
-                # Convert the input string into a list of strings
-        user_list = user_input.split(',')
+        while confirmation_input == "n":
 
-        # Convert the list of strings to a list of integers
-        user_list = [int(item.strip()) for item in user_list]
+            print(df_data[["title","resolution", "size(GB)", "seeders", "leechers", "score"]])
 
-        # Print the resulting list
-        print("\nThe list of selected movies:\n", df_data.loc[user_list, ["title","resolution", "size(GB)", "seeders", "leechers", "score"]])
-        confirmation_input = input("\n do you confirm yout choice? (y/n): ")
+            # Prompt the user to enter a list of values
+            user_input = input("\n*********************** \nWhich one(s) do you want to download?\nEnter a list of indexes separated by commas:")
+                    # Convert the input string into a list of strings
+            user_list = user_input.split(',')
 
-        if confirmation_input == "y":
-            df_data = df_data.loc[user_list, 'link']
+            # Convert the list of strings to a list of integers
+            user_list = [int(item.strip()) for item in user_list]
+
+            # Print the resulting list
+            print("\nThe list of selected movies:\n", df_data.loc[user_list, ["title","resolution", "size(GB)", "seeders", "leechers", "score"]])
+            confirmation_input = input("\n do you confirm yout choice? (y/n): ")
+
+            if confirmation_input == "y":
+                df_data = df_data.loc[user_list, 'link']
     else:
         df_data = df_data.loc[0, 'link']
+    
+    
+    return df_data
+
+
+
+
+def downloader(df_data):
+
+    for i in range(0,df_data.size):
+
+        url = df_data.iloc[i]
+        soup = selenium_scraper(url)
+        magnet_link_tag = soup.find('a', href=lambda x: x and 'magnet:' in x)
+
+        # Extract the magnet link
+        if magnet_link_tag:
+            magnet_link = magnet_link_tag.get('href')
+            print(magnet_link)
 
 
 
@@ -167,9 +194,12 @@ if __name__ == '__main__':
     parser = argparse.ArgumentParser()
     parser.add_argument("-t", "--title", type=str)
     parser.add_argument("-s", "--save", type=bool)
+    # parser.add_argument("-a", "--auto", type=bool)
+
     args = parser.parse_args()
     
 
     df_data = df_torrents(args.title, 'movies', args.save)
-    selector_and_downloader(df_data, autoSelector=False)
+    df_data = selector(df_data)
+    downloader(df_data)
 
