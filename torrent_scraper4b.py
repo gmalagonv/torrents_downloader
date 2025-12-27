@@ -272,8 +272,10 @@ def downloader(df_data):
 
 
 def downloader2(df_data):
-    # Define your Raspberry Pi's address
-    TRANSMISSION_HOST = "192.168.0.145:9091"  # ← CHANGE THIS
+    # Transmission configuration
+    TRANSMISSION_HOST = "192.168.0.145:9091"
+    TRANSMISSION_USER = "gerard"  # ← CHANGE THIS
+    TRANSMISSION_PASS = "naranja8712"      # ← CHANGE THIS
     
     print(f"Connecting to Transmission at: {TRANSMISSION_HOST}")
     
@@ -287,32 +289,23 @@ def downloader2(df_data):
             print(f"\nAdding: {magnet_link[:80]}...")
 
             try:
-                # Test connection first
-                test_result = subprocess.run(
-                    ['transmission-remote', TRANSMISSION_HOST, '--session-info'],
-                    capture_output=True, text=True
-                )
-                
-                if test_result.returncode != 0:
-                    print(f"⚠️  Cannot connect to Transmission at {TRANSMISSION_HOST}")
-                    print(f"   Error: {test_result.stderr}")
-                    continue
-                
-                # Add the torrent
+                # Add authentication parameters
                 result = subprocess.run([
                     'transmission-remote',
                     TRANSMISSION_HOST,
+                    '--auth', f'{TRANSMISSION_USER}:{TRANSMISSION_PASS}',  # ← ADD THIS
                     '-a',
                     magnet_link
                 ], capture_output=True, text=True, check=True)
                 
                 print("✅ Torrent added to Raspberry Pi!")
+                print(f"   Output: {result.stdout}")
                 
             except subprocess.CalledProcessError as e:
-                print(f"❌ Failed to add torrent: {e.stderr}")
+                print(f"❌ Failed to add torrent:")
+                print(f"   Error: {e.stderr}")
             except Exception as e:
                 print(f"❌ Unexpected error: {e}")
-
 
 if __name__ == '__main__':
 
