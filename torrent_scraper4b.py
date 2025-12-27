@@ -9,6 +9,7 @@ from selenium.webdriver.chrome.service import Service as ChromeService
 from selenium.webdriver.chrome.options import Options as ChromeOptions
 
 import argparse
+import subprocess
 
 
 def extract_page_number(url):
@@ -183,7 +184,19 @@ def downloader(df_data):
         # Extract the magnet link
         if magnet_link_tag:
             magnet_link = magnet_link_tag.get('href')
-            print(magnet_link)
+            print(f"Adding to Transmission: {magnet_link}")
+            
+            # Send to transmission-daemon
+            try:
+                subprocess.run([
+                    'transmission-remote', 
+                    'localhost:9091',  # Transmission RPC address
+                    '-a', 
+                    magnet_link
+                ], check=True)
+                print("✅ Torrent added successfully!")
+            except subprocess.CalledProcessError as e:
+                print(f"❌ Failed to add torrent: {e}")
 
 
 
