@@ -145,11 +145,12 @@ def df_torrents(title='godfather', category='movies', save2csv = False):
     for page in range(1, last_link_num + 1):
         url_page = url_head + '/' + str(page) + url_tail
         print('page**************', page, '\n', url_page, '\n')
+        
         if platform.machine() == "armv7l":
             soup2 = selenium_scraper_raspberry(url_page)
         else:
             soup2 = selenium_scraper(url_page)
-            
+
         # Extract the table rows
         table_rows = soup2.find_all('tr', class_='lista2')
 
@@ -207,6 +208,12 @@ def downloader(df_data):
     for i in range(0,df_data.size):
 
         url = df_data.iloc[i]
+
+        if platform.machine() == "armv7l":
+            soup = selenium_scraper_raspberry(url)
+        else:
+            soup = selenium_scraper(url)
+
         soup = selenium_scraper(url)
         magnet_link_tag = soup.find('a', href=lambda x: x and 'magnet:' in x)
 
