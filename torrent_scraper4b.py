@@ -10,6 +10,7 @@ from selenium.webdriver.chrome.options import Options as ChromeOptions
 
 import argparse
 import subprocess
+import platform
 
 
 def extract_page_number(url):
@@ -40,6 +41,32 @@ def selenium_scraper(url):
 
     # Close the WebDriver
 
+    driver.quit()
+    
+    return soup
+
+def selenium_scraper_raspberry(url):
+    # Set up Selenium WebDriver for Chrome
+    options = ChromeOptions()
+    options.add_argument('--headless')  # Run headless Chrome
+    options.add_argument('--no-sandbox')
+    options.add_argument('--disable-dev-shm-usage')
+    options.binary_location = '/usr/bin/chromium'  # Specify chromium on Raspberry Pi
+    
+    # For Raspberry Pi, let Selenium find chromedriver automatically
+    # Remove the executable_path parameter
+    driver = webdriver.Chrome(options=options)
+
+    # Navigate to the target URL
+    driver.get(url)
+
+    # Wait for the page to load and display the table
+    driver.implicitly_wait(2)
+
+    # Get the page source and parse with BeautifulSoup
+    soup = BeautifulSoup(driver.page_source, 'html.parser')
+
+    # Close the WebDriver
     driver.quit()
     
     return soup
@@ -118,9 +145,11 @@ def df_torrents(title='godfather', category='movies', save2csv = False):
     for page in range(1, last_link_num + 1):
         url_page = url_head + '/' + str(page) + url_tail
         print('page**************', page, '\n', url_page, '\n')
-
-        soup2 = selenium_scraper(url_page)
-        
+        if platform.machine() == "armv7l":
+            soup2 = selenium_scraper_raspberry(url_page)
+        else:
+            soup2 = selenium_scraper(url_page)
+            
         # Extract the table rows
         table_rows = soup2.find_all('tr', class_='lista2')
 
