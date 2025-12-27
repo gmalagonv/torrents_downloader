@@ -273,7 +273,7 @@ def downloader(df_data):
 
 def downloader2(df_data):
     # Define your Raspberry Pi's address
-    TRANSMISSION_HOST = "186.154.6.93:9091"  # ← CHANGE THIS
+    TRANSMISSION_HOST = "192.168.0.145:9091"  # ← CHANGE THIS
     
     print(f"Connecting to Transmission at: {TRANSMISSION_HOST}")
     
