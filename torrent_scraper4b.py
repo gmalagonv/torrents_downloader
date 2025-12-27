@@ -251,7 +251,7 @@ def downloader(df_data):
         magnet_link_tag = soup.find('a', href=lambda x: x and 'magnet:' in x)
 
         # Extract the magnet link
-        print(magnet_link_tag)
+        #print(magnet_link_tag)
         if magnet_link_tag:
             magnet_link = magnet_link_tag.get('href')
             print(f"Adding to Transmission: {magnet_link}")
@@ -260,13 +260,15 @@ def downloader(df_data):
             try:
                 subprocess.run([
                     'transmission-remote', 
-                    'localhost:9091',  # Transmission RPC address
+                    '192.168.0.145:9091',  # Transmission RPC address
                     '-a', 
                     magnet_link
                 ], check=True)
                 print("✅ Torrent added successfully!")
             except subprocess.CalledProcessError as e:
                 print(f"❌ Failed to add torrent: {e}")
+        else:
+            print('None Magnet link found')
 
 
 
