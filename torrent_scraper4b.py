@@ -71,6 +71,39 @@ def selenium_scraper_raspberry(url):
     
     return soup
 
+def selenium_scraper_raspberry2(url):
+    # Set up Selenium WebDriver for Chrome
+    options = ChromeOptions()
+    options.add_argument('--headless')  # Run headless Chrome
+    options.add_argument('--no-sandbox')
+    options.add_argument('--disable-dev-shm-usage')
+    
+    # For Raspberry Pi, specify chromium binary location
+    options.binary_location = '/usr/bin/chromium'
+    
+    # REMOVE THESE LINES:
+    # chrome_driver_path = '/usr/local/bin/chromedriver'  # Delete this line
+    # service = ChromeService(executable_path=chrome_driver_path)  # Delete this line
+    
+    # REPLACE WITH:
+    # Let Selenium find chromedriver automatically
+    driver = webdriver.Chrome(options=options)
+
+    # Navigate to the target URL
+    driver.get(url)
+
+    # Wait for the page to load and display the table
+    driver.implicitly_wait(2)
+
+    # Get the page source and parse with BeautifulSoup
+    soup = BeautifulSoup(driver.page_source, 'html.parser')
+
+    # Close the WebDriver
+    driver.quit()
+    
+    return soup
+
+
 
 def fromRows2df(table_rows, df_data):
 
@@ -147,7 +180,7 @@ def df_torrents(title='godfather', category='movies', save2csv = False):
         print('page**************', page, '\n', url_page, '\n')
         
         if platform.machine() == "armv7l":
-            soup2 = selenium_scraper_raspberry(url_page)
+            soup2 = selenium_scraper_raspberry2(url_page)
         else:
             soup2 = selenium_scraper(url_page)
 
@@ -210,7 +243,7 @@ def downloader(df_data):
         url = df_data.iloc[i]
 
         if platform.machine() == "armv7l":
-            soup = selenium_scraper_raspberry(url)
+            soup = selenium_scraper_raspberry2(url)
         else:
             soup = selenium_scraper(url)
 
