@@ -326,5 +326,5 @@ if __name__ == '__main__':
 
     df_data = df_torrents(args.title, 'movies', args.save)
     df_data = selector(df_data)
-    downloader(df_data)
+    downloader2(df_data)
 
