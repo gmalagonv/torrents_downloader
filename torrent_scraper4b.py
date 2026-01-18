@@ -180,6 +180,7 @@ def df_torrents(title='godfather', category='movies', save2csv = False):
         print('page**************', page, '\n', url_page, '\n')
         
         if platform.machine() == "armv7l":
+            print("raspberry pi lleva la pelota y se acerca a la porteria....")
             soup2 = selenium_scraper_raspberry2(url_page)
         else:
             soup2 = selenium_scraper(url_page)
